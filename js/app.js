@@ -1,14 +1,14 @@
 // The shell: routing, pairing, marker + milestone celebrations, quiet background sync.
-import { borrowToken, configured, connectDevice, pairLink, profile, readPairCode, setRec, store, syncNow, update } from "./store.js?v=2";
-import { $, $$, enter, celebrate, toast } from "./ui.js?v=2";
-import { renderToday } from "./view-today.js?v=2";
-import { renderCourse } from "./view-course.js?v=2";
-import { renderTools } from "./view-tools.js?v=2";
-import { renderSettings } from "./view-settings.js?v=2";
-import { openSOS } from "./sos.js?v=2";
-import { course } from "./content.js?v=2";
-import { cleanFor, milestones, started } from "./quit.js?v=2";
-import { money, today } from "./util.js?v=2";
+import { borrowToken, configured, connectDevice, pairLink, profile, readPairCode, setRec, store, syncNow, update } from "./store.js?v=3";
+import { $, $$, enter, celebrate, toast } from "./ui.js?v=3";
+import { renderToday } from "./view-today.js?v=3";
+import { renderCourse } from "./view-course.js?v=3";
+import { renderTools } from "./view-tools.js?v=3";
+import { renderSettings } from "./view-settings.js?v=3";
+import { openSOS } from "./sos.js?v=3";
+import { course } from "./content.js?v=3";
+import { cleanFor, milestones, started } from "./quit.js?v=3";
+import { money, today } from "./util.js?v=3";
 
 const ROUTES = { "": renderToday, course: renderCourse, tools: renderTools, settings: renderSettings };
 

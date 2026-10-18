@@ -1,10 +1,10 @@
 // Settings: your numbers (built in), the look, and optional sync between devices.
-import { esc, money } from "./util.js?v=2";
-import { profile, store } from "./store.js?v=2";
-import { devicesCard, wireDevices } from "./devices.js?v=2";
-import { $, $$ } from "./ui.js?v=2";
-import { dailyCost } from "./quit.js?v=2";
-import { slipped } from "./sos.js?v=2";
+import { esc, money } from "./util.js?v=3";
+import { profile, store } from "./store.js?v=3";
+import { devicesCard, wireDevices } from "./devices.js?v=3";
+import { $, $$ } from "./ui.js?v=3";
+import { dailyCost } from "./quit.js?v=3";
+import { slipped } from "./sos.js?v=3";
 
 export function renderSettings(view) {
   const p = profile();
@@ -21,7 +21,7 @@ export function renderSettings(view) {
         <dl class="facts">
           <div><dt>Device</dt><dd>${esc(p.device)}, pre-filled pods</dd></div>
           <div><dt>Pods</dt><dd>2 ml each, 20 mg/ml nicotine salt, rated up to ~600 puffs</dd></div>
-          <div><dt>You used</dt><dd>${p.podsDay} pods a day (a 2-pack) · ${p.podsDay * 2} ml · ${p.podsDay * 2 * p.vape.mgml} mg of nicotine</dd></div>
+          <div><dt>You used</dt><dd>${p.podsDay} pod a day (a 2-pack lasts two days) · ${p.podsDay * 2} ml · ${p.podsDay * 2 * p.vape.mgml} mg of nicotine</dd></div>
           <div><dt>Cost</dt><dd>${money(perDay, 2)} a day · ${money(perDay * 7, 2)} a week · ${money(perDay * 365)} a year</dd></div>
           <div><dt>Start line</dt><dd>${esc(new Date(p.quitAt).toLocaleString([], { dateStyle: "full", timeStyle: "short" }))}</dd></div>
         </dl>

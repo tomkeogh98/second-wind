@@ -3,19 +3,20 @@
 // so two devices logging at the same time never lose anything.
 const STATE_KEY = "sw.state.v2";
 const SETTINGS_KEY = "sw.settings.v1";
-export const DEFAULT_REPO = "tomkeogh98/quit-vaping-data";
+export const DEFAULT_REPO = "tomkeogh98/second-wind-data";
 const MAPS = ["cravings", "slips", "milestones"];
 
 // Tom's numbers, built in so there's nothing to set up: a Lost Mary BM600 with pre-filled pods
-// (2 ml of 20 mg/ml nicotine salt, rated up to ~600 puffs each), a 2-pack a day at about £6.50.
+// (2 ml of 20 mg/ml nicotine salt, rated up to ~600 puffs each), one pod a day.
+// Pods only come in 2-packs (about £6.50), so that's a pack every two days: about £3.25 a day.
 export const QUIT_AT = 1792346160000; // Sunday 18 October 2026, 18:56 (UK)
 export const DEFAULT_PROFILE = {
   name: "Tom",
   product: "vape", // vape | smoke | both
   device: "Lost Mary BM600",
   quitAt: QUIT_AT, // epoch ms; "I slipped" logs a slip, it doesn't move this
-  podsDay: 2,
-  vape: { mgml: 20, mlWeek: 28, costWeek: 45.5 },
+  podsDay: 1,
+  vape: { mgml: 20, mlWeek: 14, costWeek: 22.75 },
   smoke: { perDay: 0, packPrice: 0 },
   why: "To breathe properly at run club, sound like myself on camera, and stop being on a leash to a little device.",
 };
@@ -186,8 +187,8 @@ async function push(data) {
 
 async function errText(res) {
   if (res.status === 401) return "GitHub rejected the token (expired or wrong?)";
-  if (res.status === 403) return "The token doesn't have write access to quit-vaping-data";
-  if (res.status === 404) return "The token can't see quit-vaping-data. Add that repo to the token's repository access on GitHub";
+  if (res.status === 403) return "The token doesn't have write access to second-wind-data";
+  if (res.status === 404) return "The token can't see second-wind-data. Add that repo to the token's repository access on GitHub";
   try { return (await res.json()).message || res.statusText; } catch { return res.statusText; }
 }
 
@@ -240,7 +241,7 @@ export async function testConnection(token = store.settings.token, repoName = st
 
 // ---------- borrowing a token from Tom's other sites ----------
 // The Cut and Guitar Hero live on the same origin (tomkeogh98.github.io), so their saved sync tokens
-// are readable here. If one of them has been given access to quit-vaping-data, this device connects
+// are readable here. If one of them has been given access to second-wind-data, this device connects
 // itself with no setup at all.
 const SIBLINGS = [["cut.settings.v1", "The Cut"], ["gh.settings.v1", "Guitar Hero"]];
 export function siblingTokens() {

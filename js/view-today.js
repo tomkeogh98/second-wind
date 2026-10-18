@@ -1,12 +1,12 @@
 // Today: the clock, what you've saved, what's happening in your body, today's tip and what's coming up.
 // Nothing to fill in: the only buttons are SOS and "I slipped".
-import { dateOf, esc, humanDur, money, pad, prettyDate, split } from "./util.js?v=2";
-import { store } from "./store.js?v=2";
-import { $, $$, context } from "./ui.js?v=2";
-import { pickGreeting } from "./greetings.js?v=2";
-import { planFor, words } from "./content.js?v=2";
-import { cleanFor, dailyCost, lastNicotine, milestones } from "./quit.js?v=2";
-import { openSOS, reasons, slipped } from "./sos.js?v=2";
+import { dateOf, esc, humanDur, money, pad, prettyDate, split } from "./util.js?v=3";
+import { store } from "./store.js?v=3";
+import { $, $$, context } from "./ui.js?v=3";
+import { pickGreeting } from "./greetings.js?v=3";
+import { planFor, words } from "./content.js?v=3";
+import { cleanFor, dailyCost, lastNicotine, milestones } from "./quit.js?v=3";
+import { openSOS, reasons, slipped } from "./sos.js?v=3";
 
 let greeting = null; // one greeting per page load
 let clockTimer = null;

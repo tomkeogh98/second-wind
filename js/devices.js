@@ -1,7 +1,7 @@
 // Devices & sync: connect this device (borrowed token, setup link or pasted token) and pair new ones (link / QR).
-import { esc } from "./util.js?v=2";
-import { borrowToken, configured, connectDevice, pairLink, siblingTokens, store, syncNow } from "./store.js?v=2";
-import { $, toast } from "./ui.js?v=2";
+import { esc } from "./util.js?v=3";
+import { borrowToken, configured, connectDevice, pairLink, siblingTokens, store, syncNow } from "./store.js?v=3";
+import { $, toast } from "./ui.js?v=3";
 
 const QR_SRC = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js";
 const QR_SRI = "sha384-mZT2gIty7ZDdOGkxfP6joZcYdMW1Jvj9dRlfpTmaJAKKXTqzygtB22k7FLe+KZC1";
@@ -23,8 +23,8 @@ export function connectForm(st, { intro = "", submit = "Connect this device" } =
 }
 
 const STEPS = `<ol class="fine steps">
-  <li><b>Easiest:</b> open <a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">github.com/settings/personal-access-tokens</a>, edit the token The Cut uses, and add <b>quit-vaping-data</b> under Repository access. Save. Every device that already runs The Cut then connects here by itself.</li>
-  <li><b>Or</b> make a new fine-grained token: Only select repositories → <b>quit-vaping-data</b>, Permissions → <b>Contents: Read and write</b>, and paste it below.</li>
+  <li><b>Easiest:</b> open <a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">github.com/settings/personal-access-tokens</a>, edit the token The Cut uses, and add <b>second-wind-data</b> under Repository access. Save. Every device that already runs The Cut then connects here by itself.</li>
+  <li><b>Or</b> make a new fine-grained token: Only select repositories → <b>second-wind-data</b>, Permissions → <b>Contents: Read and write</b>, and paste it below.</li>
 </ol>`;
 
 export function devicesCard(st) {
@@ -46,7 +46,7 @@ export function devicesCard(st) {
       </div>
       <details><summary class="fine">Change token or repo</summary>${connectForm(st, { submit: "Save & reconnect" })}</details>`
     : `<p class="warn-line"><b>${configured() ? "Sync isn't working on this device." : "This device isn't syncing yet."}</b> ${configured() ? esc(store.sync.message) : "Anything you log here stays here until you connect it."}</p>
-      ${sibs.length ? `<p>This browser has a token from ${esc(sibs.map((x) => x.name).join(" and "))}. Once that token can see quit-vaping-data, it connects automatically. <button class="btn" type="button" id="tryBorrow">Try it now</button></p>` : ""}
+      ${sibs.length ? `<p>This browser has a token from ${esc(sibs.map((x) => x.name).join(" and "))}. Once that token can see second-wind-data, it connects automatically. <button class="btn" type="button" id="tryBorrow">Try it now</button></p>` : ""}
       <p><b>Connected on another device?</b> Open Settings there and use <i>Copy setup link</i> or the QR code.</p>
       <details ${configured() ? "open" : ""}><summary><b>Set up a token</b></summary>${STEPS}${connectForm(st)}</details>`}
   </section>`;
@@ -84,7 +84,7 @@ export function wireDevices(root, after) {
     e.target.disabled = true;
     const name = await borrowToken();
     if (name) { toast(`Connected using ${name}'s token.`); after?.(); }
-    else { e.target.disabled = false; toast("That token can't see quit-vaping-data yet. Add the repo to it on GitHub (step 1).", "bad"); }
+    else { e.target.disabled = false; toast("That token can't see second-wind-data yet. Add the repo to it on GitHub (step 1).", "bad"); }
   });
   $("#copyLink", root)?.addEventListener("click", async () => {
     try { await navigator.clipboard.writeText(pairLink()); toast("Setup link copied. Open it on your other device."); }

@@ -1,9 +1,9 @@
 // Craving SOS ("ride it out"), the one-tap slip, and the breathing drill. Nothing to fill in.
-import { dateOf, esc, pad, pickRandom, reducedMotion, uid } from "./util.js?v=2";
-import { profile, setRec, store } from "./store.js?v=2";
-import { DISTRACTIONS, REASON_IDEAS, words } from "./content.js?v=2";
-import { cravingsBeaten } from "./quit.js?v=2";
-import { $, celebrate, modal, toast } from "./ui.js?v=2";
+import { dateOf, esc, pad, pickRandom, reducedMotion, uid } from "./util.js?v=3";
+import { profile, setRec, store } from "./store.js?v=3";
+import { DISTRACTIONS, REASON_IDEAS, words } from "./content.js?v=3";
+import { cravingsBeaten } from "./quit.js?v=3";
+import { $, celebrate, modal, toast } from "./ui.js?v=3";
 
 const RIDE = 5 * 60; // most cravings peak and pass within a few minutes
 

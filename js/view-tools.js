@@ -1,9 +1,9 @@
 // The toolkit: in-the-moment tools, a plan for every trigger, the things your brain will say, and support. Read-only.
-import { esc } from "./util.js?v=2";
-import { profile } from "./store.js?v=2";
-import { $ } from "./ui.js?v=2";
-import { BELIEFS, FOUR_DS, fill, SUPPORT, TRIGGERS } from "./content.js?v=2";
-import { breathingDrill, openSOS } from "./sos.js?v=2";
+import { esc } from "./util.js?v=3";
+import { profile } from "./store.js?v=3";
+import { $ } from "./ui.js?v=3";
+import { BELIEFS, FOUR_DS, fill, SUPPORT, TRIGGERS } from "./content.js?v=3";
+import { breathingDrill, openSOS } from "./sos.js?v=3";
 
 export function renderTools(view) {
   const p = profile();

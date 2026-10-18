@@ -1,6 +1,6 @@
 # Second Wind
 
-Tom's quit-vaping companion, built like race day. Live at https://tomkeogh98.github.io/quit-vaping/
+Tom's quit-vaping companion, built like race day. Live at https://tomkeogh98.github.io/second-wind/
 
 Deliberately low-effort: nothing to fill in, no check-ins. It's tools, motivation, tips and reminders.
 
@@ -13,9 +13,9 @@ Deliberately low-effort: nothing to fill in, no check-ins. It's tools, motivatio
 - **Craving SOS:** a 5-minute ride-it-out timer with a breathing pacer, rotating your reasons and things to do. One tap when it's gone. "I slipped" restarts the clock.
 - **Course:** health markers timed from the last nicotine, plus the withdrawal elevation profile.
 - **Toolkit:** the four Ds, a breathing drill, a plan for every trigger, myths answered, and support (Stop for Life Oxon, NHS).
-- **Reminders by email** from the private repo `tomkeogh98/quit-vaping-data`: tomorrow's tip each evening for the first two weeks and on the eve of big days, heads-ups when a body marker is due, and a kind word after a slip.
+- **Reminders by email** from the private repo `tomkeogh98/second-wind-data`: tomorrow's tip each evening for the first two weeks and on the eve of big days, heads-ups when a body marker is due, and a kind word after a slip.
 
-The usage numbers are built into `js/store.js`: a Lost Mary BM600 with pre-filled pods (2 ml, 20 mg/ml), a 2-pack a day at about £6.50. The clock works on every device with no setup. Sync is optional and only carries slips and cravings-beaten. It connects by itself when The Cut's saved token can see `quit-vaping-data`, or via Settings → Sync across devices.
+The usage numbers are built into `js/store.js`: a Lost Mary BM600 with pre-filled pods (2 ml, 20 mg/ml), one pod a day (they come in 2-packs at about £6.50, so roughly £3.25 a day). The clock works on every device with no setup. Sync is optional and only carries slips and cravings-beaten. It connects by itself when The Cut's saved token can see `second-wind-data`, or via Settings → Sync across devices.
 
 The site is served from the `gh-pages` branch. Bump `?v=N` on every CSS/JS reference and import when releasing.
 

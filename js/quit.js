@@ -1,8 +1,8 @@
 // The rules: the clock, what you've saved, the course and the milestones ahead.
 // Pure functions of (state, profile, now) so they're easy to test. scripts/nudge.py in
-// quit-vaping-data mirrors lastNicotine / course(). Keep them in sync.
-import { dateOf, DAY, daysBetween, HOUR, live, today } from "./util.js?v=2";
-import { course } from "./content.js?v=2";
+// second-wind-data mirrors lastNicotine / course(). Keep them in sync.
+import { dateOf, DAY, daysBetween, HOUR, live, today } from "./util.js?v=3";
+import { course } from "./content.js?v=3";
 
 export const quitDate = (p) => (p.quitAt ? dateOf(p.quitAt) : null);
 export const started = (p, nowMs = Date.now()) => Boolean(p.quitAt) && nowMs >= p.quitAt;

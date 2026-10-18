@@ -17,7 +17,7 @@ from playwright.sync_api import sync_playwright
 from serve import serve
 
 TOKEN = "github_pat_FAKE_TEST_TOKEN"
-REPO = "tomkeogh98/quit-vaping-data"
+REPO = "tomkeogh98/second-wind-data"
 base, httpd = serve()
 fails = []
 FILES = {}

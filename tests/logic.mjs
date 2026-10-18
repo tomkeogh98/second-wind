@@ -11,13 +11,13 @@ const near = (a, b, eps = 0.01) => Math.abs(a - b) < eps;
 const P = DEFAULT_PROFILE;
 const blank = () => ({ version: 1, profile: null, cravings: {}, slips: {}, milestones: {} });
 
-// Tom's numbers: Lost Mary BM600, a 2-pack of 2 ml 20 mg/ml pods a day at ~£6.50
+// Tom's numbers: Lost Mary BM600, one 2 ml 20 mg/ml pod a day; a £6.50 2-pack lasts two days
 ok(new Date(QUIT_AT).getHours() === 18 && new Date(QUIT_AT).getMinutes() === 56, "start line is 18:56");
-ok(near(dailyCost(P), 6.5), `£6.50 a day, got ${dailyCost(P)}`);
+ok(near(dailyCost(P), 3.25), `£3.25 a day, got ${dailyCost(P)}`);
 const tenDays = QUIT_AT + 10 * DAY;
-ok(near(saved(P, tenDays), 65), "10 days = £65 saved");
+ok(near(saved(P, tenDays), 32.5), "10 days = £32.50 saved");
 const a = avoided(P, tenDays);
-ok(a.pods === 20 && a.mg === 800 && a.puffs === 12000, `10 days: 20 pods, 800 mg, 12k puffs (${JSON.stringify(a)})`);
+ok(a.pods === 10 && a.mg === 400 && a.puffs === 6000, `10 days: 10 pods, 400 mg, 6k puffs (${JSON.stringify(a)})`);
 ok(saved(P, QUIT_AT - HOUR) === 0 && avoided(P, QUIT_AT - HOUR).pods === 0, "nothing before the start");
 
 // clock & slips
@@ -27,14 +27,14 @@ s.slips.a = { at: QUIT_AT + 4 * DAY, date: "x", updatedAt: 1 };
 s.slips.old = { at: QUIT_AT - DAY, date: "x", updatedAt: 1 };
 s.slips.del = { at: QUIT_AT + 8 * DAY, date: "x", deleted: true, updatedAt: 2 };
 ok(lastNicotine(s, P) === QUIT_AT + 4 * DAY, "slip restarts the clock; earlier and deleted slips ignored");
-ok(near(saved(P, tenDays), 65), "a slip doesn't cost the money saved");
+ok(near(saved(P, tenDays), 32.5), "a slip doesn't cost the money saved");
 
 // course & milestones
 const cp = courseProgress(blank(), P, tenDays);
 ok(cp.last.title === "Physical symptoms easing" && cp.next.title === "Withdrawal mostly over", `course at day 10: ${cp.last?.title} → ${cp.next?.title}`);
 ok(courseProgress(blank(), P, QUIT_AT + 5 * 60000).last === null, "first minutes: nothing passed yet");
 const ms = milestones(blank(), P, tenDays);
-ok(ms.filter((m) => m.done).length === 3 && near(ms.find((m) => m.title === "28 days").money, 182), "milestones: 3 done by day 10, 28 days = £182");
+ok(ms.filter((m) => m.done).length === 3 && near(ms.find((m) => m.title === "28 days").money, 91), "milestones: 3 done by day 10, 28 days = £91");
 ok(milestones(s, P, tenDays).filter((m) => m.done).length === 2, "after a slip on day 4, only 24h and 72h done");
 const wk = new Date(milestones(blank(), P, QUIT_AT).find((m) => m.title === "One week").when);
 ok(wk.getDate() === 25 && wk.getHours() === 18 && wk.getMinutes() === 56, `one week lands Sun 25 Oct 18:56 despite the clocks change (${wk})`);

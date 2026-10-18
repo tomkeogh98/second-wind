@@ -1,8 +1,8 @@
 // Shared view helpers: the "now" context, dialogs, toasts and the finisher-medal celebration.
-import { dateOf, DAY, daysBetween, humanDur, HOUR, money, reducedMotion, shortDur, weekday, esc } from "./util.js?v=2";
-import { profile, store } from "./store.js?v=2";
-import { avoided, cleanFor, courseProgress, cravingsBeaten, dayNumber, liveSlips, quitDate, saved, started } from "./quit.js?v=2";
-import { words } from "./content.js?v=2";
+import { dateOf, DAY, daysBetween, humanDur, HOUR, money, reducedMotion, shortDur, weekday, esc } from "./util.js?v=3";
+import { profile, store } from "./store.js?v=3";
+import { avoided, cleanFor, courseProgress, cravingsBeaten, dayNumber, liveSlips, quitDate, saved, started } from "./quit.js?v=3";
+import { words } from "./content.js?v=3";
 
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
