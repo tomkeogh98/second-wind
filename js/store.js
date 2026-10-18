@@ -30,10 +30,19 @@ function writeJSON(key, value) {
   try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch { return false; }
 }
 
+// Older builds could borrow The Cut's token. Second Wind only uses its own now, so drop a borrowed one.
+function ownToken(s) {
+  if (!("borrowed" in s)) return s;
+  if (s.borrowed) s.token = "";
+  delete s.borrowed;
+  writeJSON(SETTINGS_KEY, s);
+  return s;
+}
+
 const listeners = new Set();
 export const store = {
   state: normalise(readJSON(STATE_KEY, {})),
-  settings: Object.assign({ token: "", repo: DEFAULT_REPO, borrowed: "" }, readJSON(SETTINGS_KEY, {})),
+  settings: ownToken(Object.assign({ token: "", repo: DEFAULT_REPO }, readJSON(SETTINGS_KEY, {}))),
   rev: 0, // bumps whenever the data changes, so views know to redraw
   sync: { status: "off", message: "", lastSynced: null },
   subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
@@ -239,32 +248,6 @@ export async function testConnection(token = store.settings.token, repoName = st
   return repo.full_name;
 }
 
-// ---------- borrowing a token from Tom's other sites ----------
-// The Cut and Guitar Hero live on the same origin (tomkeogh98.github.io), so their saved sync tokens
-// are readable here. If one of them has been given access to second-wind-data, this device connects
-// itself with no setup at all.
-const SIBLINGS = [["cut.settings.v1", "The Cut"], ["gh.settings.v1", "Guitar Hero"]];
-export function siblingTokens() {
-  const out = [];
-  for (const [key, name] of SIBLINGS) {
-    const t = clean(readJSON(key, {})?.token);
-    if (t && !out.some((o) => o.token === t)) out.push({ token: t, name });
-  }
-  return out;
-}
-export async function borrowToken() {
-  if (configured()) return false;
-  for (const { token, name } of siblingTokens()) {
-    try {
-      await testConnection(token, store.settings.repo || DEFAULT_REPO);
-      saveSettings({ token, borrowed: name, joining: !onboarded() });
-      await syncNow();
-      return name;
-    } catch { /* that token can't see the repo: try the next */ }
-  }
-  return false;
-}
-
 // ---------- backup ----------
 export function exportJSON() {
   return new Blob([JSON.stringify(store.state, null, 2)], { type: "application/json" });
@@ -289,7 +272,7 @@ export function readPairCode(code) {
 }
 // Connect this device: save, check the repo, then pull everything down.
 export async function connectDevice(repo, token) {
-  saveSettings({ repo, token, borrowed: "", joining: !store.sync.lastSynced });
+  saveSettings({ repo, token, joining: !store.sync.lastSynced });
   const name = await testConnection();
   await syncNow();
   if (store.sync.status === "error") throw new Error(store.sync.message);

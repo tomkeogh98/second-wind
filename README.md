@@ -15,7 +15,7 @@ Deliberately low-effort: nothing to fill in, no check-ins. It's tools, motivatio
 - **Toolkit:** the four Ds, a breathing drill, a plan for every trigger, myths answered, and support (Stop for Life Oxon, NHS).
 - **Reminders by email** from the private repo `tomkeogh98/second-wind-data`: tomorrow's tip each evening for the first two weeks and on the eve of big days, heads-ups when a body marker is due, and a kind word after a slip.
 
-The usage numbers are built into `js/store.js`: a Lost Mary BM600 with pre-filled pods (2 ml, 20 mg/ml), one pod a day (they come in 2-packs at about £6.50, so roughly £3.25 a day). The clock works on every device with no setup. Sync is optional and only carries slips and cravings-beaten. It connects by itself when The Cut's saved token can see `second-wind-data`, or via Settings → Sync across devices.
+The usage numbers are built into `js/store.js`: a Lost Mary BM600 with pre-filled pods (2 ml, 20 mg/ml), one pod a day (they come in 2-packs at about £6.50, so roughly £3.25 a day). The clock works on every device with no setup. Sync is optional and only carries slips and cravings-beaten. It uses its own fine-grained token (Contents: Read and write on `second-wind-data` only), never The Cut's or Guitar Hero's. Set it up once in Settings → Sync across devices (the link there pre-fills GitHub's token form), then add other devices with the setup link or QR code.
 
 The site is served from the `gh-pages` branch. Bump `?v=N` on every CSS/JS reference and import when releasing.
 
@@ -25,5 +25,5 @@ The site is served from the `gh-pages` branch. Bump `?v=N` on every CSS/JS refer
 PY=~/Library/Caches/claude-playwright/venv/bin/python
 $PY tests/run_logic.py    # money, pods, clock, slips, course, milestones (incl. clocks change), tips, merge
 $PY tests/smoke.py [url]  # fakes day 1 / 10 / 40; every page at 375/1024/1440/1920, light & dark; SOS + slip
-$PY tests/sync_test.py    # optional sync against a fake GitHub API: setup link, borrowed Cut token, slip restarts everywhere
+$PY tests/sync_test.py    # optional sync against a fake GitHub API: setup link, own token only (never The Cut's), slip restarts everywhere
 ```

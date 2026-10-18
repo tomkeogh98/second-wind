@@ -2,8 +2,8 @@
 
 Device A: beats a craving, then connects from Settings → Sync across devices.
 Device B: opens A's setup link (#/pair/…) on a phone.
-Device C: a laptop that only has The Cut's saved token: connects by itself on load, silently.
-Device D: has a Cut token WITHOUT access: stays unconnected, no errors, no nagging.
+Device C: a laptop with The Cut's saved token (one that could see the repo): must NOT use it. Joins via A's setup link.
+Device D: an older build had borrowed The Cut's token: it's dropped on load, no errors, no nagging.
 Then B restarts the clock after a slip, and A and C must see the clock restart and A's craving.
 """
 import base64
@@ -50,11 +50,13 @@ def fake_github(route):
     return route.fulfill(status=405, headers=cors)
 
 
-def device(browser, cut_token=None, **kw):
+def device(browser, cut_token=None, sw_settings=None, **kw):
     ctx = browser.new_context(**kw)
     ctx.route("https://api.github.com/**", fake_github)
     if cut_token:
         ctx.add_init_script(f"localStorage.setItem('cut.settings.v1', JSON.stringify({{ token: '{cut_token}' }}))")
+    if sw_settings:
+        ctx.add_init_script(f"if (!sessionStorage.seeded) {{ sessionStorage.seeded = 1; localStorage.setItem('sw.settings.v1', {json.dumps(json.dumps(sw_settings))}) }}")
     page = ctx.new_page()
     page.on("pageerror", lambda e: fails.append(f"pageerror: {e}"))
     page.on("console", lambda m: fails.append(f"console: {m.text}") if m.type == "error" and "404" not in m.text else None)
@@ -101,15 +103,28 @@ with sync_playwright() as p:
 
     ctxC, C = device(b, cut_token=TOKEN, viewport={"width": 1280, "height": 900})
     C.goto(base + "/")
-    C.wait_for_function("() => window.__sw.store.settings.borrowed === 'The Cut'", timeout=8000)
+    C.wait_for_selector(".bib")
+    C.wait_for_timeout(1500)
+    if C.evaluate("() => window.__sw.store.settings.token") or C.evaluate("() => window.__sw.store.sync.status") != "off":
+        fails.append("C used The Cut's token")
+    C.goto(base + "/#/settings")
+    C.click(".optional-sync summary")
+    if "The Cut" in C.inner_text("#devices"):
+        fails.append("C's sync card still mentions The Cut")
+    if "personal-access-tokens/new?name=Second+Wind+sync" not in C.inner_html("#devices") or "contents=write" not in C.inner_html("#devices"):
+        fails.append("C's sync card has no pre-filled token link")
+    C.goto(link)
+    C.wait_for_selector(".bib")
     synced(C)
 
-    ctxD, D = device(b, cut_token="github_pat_CUT_ONLY", viewport={"width": 1280, "height": 900})
+    ctxD, D = device(b, sw_settings={"token": TOKEN, "repo": REPO, "borrowed": "The Cut"}, viewport={"width": 1280, "height": 900})
     D.goto(base + "/")
     D.wait_for_selector(".bib")
     D.wait_for_timeout(1000)
     if D.evaluate("() => window.__sw.store.settings.token"):
-        fails.append("D saved a token that can't see the repo")
+        fails.append("D kept the borrowed Cut token")
+    if D.evaluate("() => JSON.parse(localStorage.getItem('sw.settings.v1')).borrowed !== undefined"):
+        fails.append("D still has 'borrowed' saved")
     if D.locator(".sync-banner").count():
         fails.append("D shows a sync banner")
 

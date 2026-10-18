@@ -1,7 +1,7 @@
-// Devices & sync: connect this device (borrowed token, setup link or pasted token) and pair new ones (link / QR).
-import { esc } from "./util.js?v=3";
-import { borrowToken, configured, connectDevice, pairLink, siblingTokens, store, syncNow } from "./store.js?v=3";
-import { $, toast } from "./ui.js?v=3";
+// Devices & sync: connect this device (setup link or its own pasted token) and pair new ones (link / QR).
+import { esc } from "./util.js?v=4";
+import { configured, connectDevice, pairLink, store, syncNow } from "./store.js?v=4";
+import { $, toast } from "./ui.js?v=4";
 
 const QR_SRC = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js";
 const QR_SRI = "sha384-mZT2gIty7ZDdOGkxfP6joZcYdMW1Jvj9dRlfpTmaJAKKXTqzygtB22k7FLe+KZC1";
@@ -15,26 +15,34 @@ const ago = (d) => {
 export function connectForm(st, { intro = "", submit = "Connect this device" } = {}) {
   return `<form class="connect-form" id="connectForm">
     ${intro}
-    <label>Token <input name="token" type="password" autocomplete="off" value="${esc(st.borrowed ? "" : st.token)}" placeholder="github_pat_…"></label>
+    <label>Token <input name="token" type="password" autocomplete="off" value="${esc(st.token)}" placeholder="github_pat_…"></label>
     <details class="fine"><summary>Data repo (${esc(st.repo)})</summary><label>Repo <input name="repo" value="${esc(st.repo)}"></label></details>
     <button class="btn primary">${esc(submit)}</button>
     <p class="fine" id="connectMsg" role="status"></p>
   </form>`;
 }
 
+// Second Wind's own fine-grained token. GitHub pre-fills everything except the repo choice.
+const TOKEN_URL = `https://github.com/settings/personal-access-tokens/new?${new URLSearchParams({
+  name: "Second Wind sync",
+  description: "Syncs Second Wind slips and cravings. Repository access: only second-wind-data.",
+  expires_in: "366",
+  contents: "write",
+})}`;
+
 const STEPS = `<ol class="fine steps">
-  <li><b>Easiest:</b> open <a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">github.com/settings/personal-access-tokens</a>, edit the token The Cut uses, and add <b>second-wind-data</b> under Repository access. Save. Every device that already runs The Cut then connects here by itself.</li>
-  <li><b>Or</b> make a new fine-grained token: Only select repositories → <b>second-wind-data</b>, Permissions → <b>Contents: Read and write</b>, and paste it below.</li>
+  <li>Open <a href="${esc(TOKEN_URL)}" target="_blank" rel="noopener"><b>Make a Second Wind token</b></a>. The name, a year's expiry and <b>Contents: Read and write</b> are filled in.</li>
+  <li>Under Repository access pick <b>Only select repositories</b> → <b>second-wind-data</b>. GitHub can't fill that bit in.</li>
+  <li>Generate the token, copy it and paste it below. Other devices then join with the setup link, so you only do this once.</li>
 </ol>`;
 
 export function devicesCard(st) {
   const on = configured() && store.sync.status !== "error";
-  const sibs = siblingTokens();
   return `<section class="panel devices" id="devices">
     <h2>Devices & sync</h2>
-    ${on ? `<p class="sync-ok"><i></i> <b>This device is connected</b> to ${esc(st.repo)}${st.borrowed ? ` (using ${esc(st.borrowed)}'s token)` : ""} · synced ${ago(store.sync.lastSynced)}</p>
+    ${on ? `<p class="sync-ok"><i></i> <b>This device is connected</b> to ${esc(st.repo)} · synced ${ago(store.sync.lastSynced)}</p>
       <h3 class="label">Add another laptop or phone</h3>
-      <p>Devices that already run The Cut connect by themselves. For any other device, scan this code with its camera or open the setup link. It connects in one tap.</p>
+      <p>Scan this code with the other device's camera or open the setup link there. It connects in one tap.</p>
       <div class="pair">
         <div class="qr" id="qr" aria-label="QR code with a setup link for another device"><button class="btn" type="button" id="showQr">Show QR code</button></div>
         <div class="pair-actions">
@@ -46,7 +54,6 @@ export function devicesCard(st) {
       </div>
       <details><summary class="fine">Change token or repo</summary>${connectForm(st, { submit: "Save & reconnect" })}</details>`
     : `<p class="warn-line"><b>${configured() ? "Sync isn't working on this device." : "This device isn't syncing yet."}</b> ${configured() ? esc(store.sync.message) : "Anything you log here stays here until you connect it."}</p>
-      ${sibs.length ? `<p>This browser has a token from ${esc(sibs.map((x) => x.name).join(" and "))}. Once that token can see second-wind-data, it connects automatically. <button class="btn" type="button" id="tryBorrow">Try it now</button></p>` : ""}
       <p><b>Connected on another device?</b> Open Settings there and use <i>Copy setup link</i> or the QR code.</p>
       <details ${configured() ? "open" : ""}><summary><b>Set up a token</b></summary>${STEPS}${connectForm(st)}</details>`}
   </section>`;
@@ -80,12 +87,6 @@ function loadQr() {
 
 export function wireDevices(root, after) {
   wireConnectForm(root, after);
-  $("#tryBorrow", root)?.addEventListener("click", async (e) => {
-    e.target.disabled = true;
-    const name = await borrowToken();
-    if (name) { toast(`Connected using ${name}'s token.`); after?.(); }
-    else { e.target.disabled = false; toast("That token can't see second-wind-data yet. Add the repo to it on GitHub (step 1).", "bad"); }
-  });
   $("#copyLink", root)?.addEventListener("click", async () => {
     try { await navigator.clipboard.writeText(pairLink()); toast("Setup link copied. Open it on your other device."); }
     catch { prompt("Copy this setup link:", pairLink()); }
