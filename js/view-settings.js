@@ -1,10 +1,10 @@
 // Settings: your numbers (built in), the look, and optional sync between devices.
-import { esc, money } from "./util.js?v=4";
-import { profile, store } from "./store.js?v=4";
-import { devicesCard, wireDevices } from "./devices.js?v=4";
-import { $, $$ } from "./ui.js?v=4";
-import { dailyCost } from "./quit.js?v=4";
-import { slipped } from "./sos.js?v=4";
+import { esc, money } from "./util.js?v=5";
+import { profile, store } from "./store.js?v=5";
+import { devicesCard, wireDevices } from "./devices.js?v=5";
+import { $, $$ } from "./ui.js?v=5";
+import { dailyCost } from "./quit.js?v=5";
+import { slipped } from "./sos.js?v=5";
 
 export function renderSettings(view) {
   const p = profile();

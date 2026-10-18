@@ -1,7 +1,7 @@
 // Everything Second Wind says that isn't about your own data: the health course, the withdrawal
 // curve, the day-by-day plan and the aid-station toolkit.
 // {thing} {things} {kit} {habit} are filled per product (vape / smoke / both), see fill().
-import { HOUR, DAY, MIN } from "./util.js?v=4";
+import { HOUR, DAY, MIN } from "./util.js?v=5";
 
 const WORDS = {
   vape: { thing: "vape", things: "vapes", kit: "the BM600, every spare pod and the charging cable", habit: "vaping", puff: "puff" },

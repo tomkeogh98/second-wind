@@ -1,9 +1,9 @@
 // The course: health markers along the route, and the elevation profile of withdrawal.
-import { DAY, esc, humanDur } from "./util.js?v=4";
-import { profile } from "./store.js?v=4";
-import { context } from "./ui.js?v=4";
-import { elevation } from "./chart.js?v=4";
-import { SOURCES } from "./content.js?v=4";
+import { DAY, esc, humanDur } from "./util.js?v=5";
+import { profile } from "./store.js?v=5";
+import { context } from "./ui.js?v=5";
+import { elevation } from "./chart.js?v=5";
+import { SOURCES } from "./content.js?v=5";
 
 export function renderCourse(view) {
   const c = context();

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <!-- Home-screen icon source for apple-touch-icon.png. Full bleed: iOS rounds the corners itself. -->
+  <defs>
+    <radialGradient id="glow" cx="22%" cy="18%" r="95%">
+      <stop offset="0" stop-color="#ff8248"/>
+      <stop offset=".55" stop-color="#ff5a1f"/>
+      <stop offset="1" stop-color="#e8400a"/>
+    </radialGradient>
+  </defs>
+  <rect width="180" height="180" fill="url(#glow)"/>
+  <g transform="translate(90 90) scale(4.35) translate(-16.5 -15)" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round">
+    <path d="M5 12h15a4 4 0 1 0-4-4M5 18h19a4 4 0 1 1-4 4M5 24h8"/>
+  </g>
+</svg>

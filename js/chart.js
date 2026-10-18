@@ -1,6 +1,6 @@
 // The elevation profile: the typical withdrawal curve drawn as the course's hills, with "you are here". Hand-rolled SVG.
-import { esc } from "./util.js?v=4";
-import { withdrawal } from "./content.js?v=4";
+import { esc } from "./util.js?v=5";
+import { withdrawal } from "./content.js?v=5";
 
 const W = 960, H = 300, PAD = { l: 28, r: 20, t: 34, b: 40 };
 const DAYS = 30;
