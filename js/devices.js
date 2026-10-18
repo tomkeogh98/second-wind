@@ -1,7 +1,7 @@
 // Devices & sync: connect this device (borrowed token, setup link or pasted token) and pair new ones (link / QR).
-import { esc } from "./util.js?v=1";
-import { borrowToken, configured, connectDevice, pairLink, siblingTokens, store, syncNow } from "./store.js?v=1";
-import { $, toast } from "./ui.js?v=1";
+import { esc } from "./util.js?v=2";
+import { borrowToken, configured, connectDevice, pairLink, siblingTokens, store, syncNow } from "./store.js?v=2";
+import { $, toast } from "./ui.js?v=2";
 
 const QR_SRC = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js";
 const QR_SRI = "sha384-mZT2gIty7ZDdOGkxfP6joZcYdMW1Jvj9dRlfpTmaJAKKXTqzygtB22k7FLe+KZC1";

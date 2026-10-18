@@ -1,9 +1,9 @@
 // The course: health markers along the route, and the elevation profile of withdrawal.
-import { DAY, esc, humanDur } from "./util.js?v=1";
-import { profile, store } from "./store.js?v=1";
-import { context } from "./ui.js?v=1";
-import { elevation } from "./chart.js?v=1";
-import { SOURCES } from "./content.js?v=1";
+import { DAY, esc, humanDur } from "./util.js?v=2";
+import { profile } from "./store.js?v=2";
+import { context } from "./ui.js?v=2";
+import { elevation } from "./chart.js?v=2";
+import { SOURCES } from "./content.js?v=2";
 
 export function renderCourse(view) {
   const c = context();
@@ -20,7 +20,7 @@ export function renderCourse(view) {
     <section class="panel elev-panel">
       <h2 class="sec">Elevation profile <small>the first 30 days</small></h2>
       <p class="fine">Withdrawal climbs in the first hours, peaks around day three (the wall), then eases over two to four weeks. After that, what's left is short cravings set off by cues. ${c.started ? `You're <b>${esc(humanDur(c.cleanMs))}</b> in.` : "Your dot appears once you start."}</p>
-      ${elevation(store.state, p, c.started ? c.cleanMs / DAY : 0, c.now)}
+      ${elevation(c.started ? c.cleanMs / DAY : 0)}
     </section>
 
     <ol class="route">
@@ -31,7 +31,7 @@ export function renderCourse(view) {
           <div class="km"><b>${esc(m.km)}</b><small>${/\d/.test(m.km) ? "km" : ""}</small></div>
           <div class="marker-dot" aria-hidden="true">${m.reached ? "✓" : i + 1}</div>
           <div class="marker-body">
-            <p class="marker-time">${esc(humanAt(m.at))}${state === "next" ? ` · <b>${esc(humanDur(left))} to go</b>` : state === "passed" ? " · passed" : ""}${!m.reached && m.everReached ? " · reached before" : ""}</p>
+            <p class="marker-time">${esc(humanAt(m.at))}${state === "next" ? ` · <b>${esc(humanDur(left))} to go</b>` : state === "passed" ? " · passed" : ""}</p>
             <h3>${esc(m.title)}</h3>
             <p>${esc(m.body)}</p>
             ${state === "next" ? `<span class="bar"><i style="width:${(cp.frac * 100).toFixed(1)}%"></i></span>` : ""}
@@ -43,7 +43,7 @@ export function renderCourse(view) {
 
     <section class="panel sources">
       <h2 class="sec">Where this comes from</h2>
-      <p class="fine">Smoking markers follow the NHS quit timeline. Vaping is newer and the long-term research is still coming in, so vaping markers stick to what's known about nicotine and withdrawal. A slip restarts the clock on these markers, but not your medals.</p>
+      <p class="fine">Smoking markers follow the NHS quit timeline. Vaping is newer and the long-term research is still coming in, so vaping markers stick to what's known about nicotine and withdrawal. A slip restarts the clock on these markers, but not the money you've saved.</p>
       <ul class="src-list">${SOURCES.map((x) => `<li><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.t)} ↗</a></li>`).join("")}</ul>
     </section>`;
 }

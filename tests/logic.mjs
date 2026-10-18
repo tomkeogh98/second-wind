@@ -1,109 +1,70 @@
 // Pure-logic checks for the rules, run in headless Chrome by tests/run_logic.py.
-import { addDays, DAY, HOUR, fmt, today } from "/js/util.js?v=1";
-import { avoided, bestRun, checkinStreak, cleanFor, courseProgress, dailyCost, dayList, dayStatus, lastNicotine, nudgeCheck, patterns, saved, totals } from "/js/quit.js?v=1";
-import { medals, rewardProgress } from "/js/goals.js?v=1";
-import { course, planFor, withdrawal } from "/js/content.js?v=1";
-import { merge, mergeRec } from "/js/store.js?v=1";
+import { DAY, HOUR } from "/js/util.js?v=2";
+import { avoided, cleanFor, courseProgress, cravingsBeaten, dailyCost, dayNumber, lastNicotine, milestones, saved } from "/js/quit.js?v=2";
+import { course, planFor, withdrawal } from "/js/content.js?v=2";
+import { DEFAULT_PROFILE, merge, mergeRec, QUIT_AT } from "/js/store.js?v=2";
 
 let fails = 0, passes = 0;
 const ok = (cond, msg) => { if (cond) passes++; else { fails++; console.log("FAIL:", msg); } };
 const near = (a, b, eps = 0.01) => Math.abs(a - b) < eps;
 
-const NOW = Date.now();
-const day = (n) => addDays(today(), n);
-const at = (n, h = 12) => { const d = new Date(); d.setDate(d.getDate() + n); d.setHours(h, 0, 0, 0); return d.getTime(); };
-const P = { name: "Tom", product: "vape", quitAt: at(-10, 9), method: "cold", vape: { mgml: 20, mlWeek: 7, costWeek: 14 }, smoke: { perDay: 10, packPrice: 16 } };
-const blank = () => ({ version: 1, profile: P, checkins: {}, cravings: {}, slips: {}, tasks: {}, plans: {}, reasons: {}, rewards: {}, milestones: {}, attempts: {} });
+const P = DEFAULT_PROFILE;
+const blank = () => ({ version: 1, profile: null, cravings: {}, slips: {}, milestones: {} });
 
-// money & nicotine
-ok(near(dailyCost(P), 2), "vape daily cost = 14/7");
-ok(near(dailyCost({ ...P, product: "smoke" }), 8), "smoke daily cost = 16/20*10");
-ok(near(dailyCost({ ...P, product: "both" }), 10), "both = sum");
-let s = blank();
-const sv = saved(s, P, at(0, 9));
-ok(near(sv, 20, 0.05), `10 days saved £20, got ${sv}`);
-ok(avoided(s, P, at(0, 9)).mg === 200 && avoided(s, P, at(0, 9)).ml === 10, "10 days of 20mg/ml × 1 ml/day = 200 mg");
-ok(saved(s, { ...P, quitAt: at(2) }, NOW) === 0, "no savings before the start");
+// Tom's numbers: Lost Mary BM600, a 2-pack of 2 ml 20 mg/ml pods a day at ~£6.50
+ok(new Date(QUIT_AT).getHours() === 18 && new Date(QUIT_AT).getMinutes() === 56, "start line is 18:56");
+ok(near(dailyCost(P), 6.5), `£6.50 a day, got ${dailyCost(P)}`);
+const tenDays = QUIT_AT + 10 * DAY;
+ok(near(saved(P, tenDays), 65), "10 days = £65 saved");
+const a = avoided(P, tenDays);
+ok(a.pods === 20 && a.mg === 800 && a.puffs === 12000, `10 days: 20 pods, 800 mg, 12k puffs (${JSON.stringify(a)})`);
+ok(saved(P, QUIT_AT - HOUR) === 0 && avoided(P, QUIT_AT - HOUR).pods === 0, "nothing before the start");
 
 // clock & slips
-ok(lastNicotine(s, P) === P.quitAt, "no slips: last nicotine = quit");
-s.slips.a = { at: at(-4, 21), date: day(-4), trigger: "alcohol", spent: 5, updatedAt: 1 };
-s.slips.b = { at: at(-12, 21), date: day(-12), trigger: "alcohol", updatedAt: 1 }; // before quit: ignored
-ok(lastNicotine(s, P) === at(-4, 21), "slip restarts the clock");
-ok(near(saved(s, P, at(0, 9)), 15, 0.05), "slip spending comes off savings");
-const best = bestRun(s, P, at(0, 9));
-ok(near(best / DAY, (at(-4, 21) - P.quitAt) / DAY), "best run is the longer stretch before the slip");
-s.slips.c = { at: at(-1, 9), date: day(-1), deleted: true, updatedAt: 2 };
-ok(lastNicotine(s, P) === at(-4, 21), "deleted slips don't count");
+let s = blank();
+ok(lastNicotine(s, P) === QUIT_AT && near(cleanFor(s, P, tenDays), 10 * DAY), "no slips: clock from the start");
+s.slips.a = { at: QUIT_AT + 4 * DAY, date: "x", updatedAt: 1 };
+s.slips.old = { at: QUIT_AT - DAY, date: "x", updatedAt: 1 };
+s.slips.del = { at: QUIT_AT + 8 * DAY, date: "x", deleted: true, updatedAt: 2 };
+ok(lastNicotine(s, P) === QUIT_AT + 4 * DAY, "slip restarts the clock; earlier and deleted slips ignored");
+ok(near(saved(P, tenDays), 65), "a slip doesn't cost the money saved");
 
-// day statuses
-s.checkins[day(-3)] = { clean: true, updatedAt: 1 };
-s.checkins[day(-2)] = { clean: false, updatedAt: 1 };
-ok(dayStatus(s, P, day(-11)) === "off", "before quit day = off");
-ok(dayStatus(s, P, day(-4)) === "slip", "slip day = slip");
-ok(dayStatus(s, P, day(-3)) === "clean", "checked in clean");
-ok(dayStatus(s, P, day(-2)) === "slip", "checked in not clean = slip");
-ok(dayStatus(s, P, day(-1)) === "assumed", "no check-in, no slip = assumed");
-ok(dayStatus(s, P, day(0)) === "today", "today pending");
-ok(dayStatus(s, P, day(1)) === "future", "future");
-const t = totals(s, P);
-ok(t.days === 11 && t.slip === 2 && t.clean === 1, `totals ${JSON.stringify(t)}`);
-
-// streaks & list
-s.checkins[day(-1)] = { clean: true, updatedAt: 1 };
-s.checkins[day(0)] = { clean: true, note: "Good day", updatedAt: 1 };
-ok(checkinStreak(s) === 4, `check-in streak 4, got ${checkinStreak(s)}`);
-s.tasks[day(0)] = { plan: true, move: true, updatedAt: 1 };
-ok(dayList(s, P, day(0)).full, "full day when all four done");
-
-// course
-const cp = courseProgress(blank(), P, at(0, 9));
-ok(cp.list.find((m) => m.title.startsWith("Nicotine cleared")).reached, "72h passed after 10 days");
-ok(cp.next && cp.next.title === "Withdrawal mostly over", `next marker after 10 days: ${cp.next?.title}`);
+// course & milestones
+const cp = courseProgress(blank(), P, tenDays);
+ok(cp.last.title === "Physical symptoms easing" && cp.next.title === "Withdrawal mostly over", `course at day 10: ${cp.last?.title} → ${cp.next?.title}`);
+ok(courseProgress(blank(), P, QUIT_AT + 5 * 60000).last === null, "first minutes: nothing passed yet");
+const ms = milestones(blank(), P, tenDays);
+ok(ms.filter((m) => m.done).length === 3 && near(ms.find((m) => m.title === "28 days").money, 182), "milestones: 3 done by day 10, 28 days = £182");
+ok(milestones(s, P, tenDays).filter((m) => m.done).length === 2, "after a slip on day 4, only 24h and 72h done");
+const wk = new Date(milestones(blank(), P, QUIT_AT).find((m) => m.title === "One week").when);
+ok(wk.getDate() === 25 && wk.getHours() === 18 && wk.getMinutes() === 56, `one week lands Sun 25 Oct 18:56 despite the clocks change (${wk})`);
 ok(course("smoke")[0].title === "Pulse settling" && course("both").length > course("smoke").length, "smoke/both courses");
 ok(withdrawal(3) > withdrawal(1) && withdrawal(3) > withdrawal(10) && withdrawal(30) < 0.2, "withdrawal peaks at day 3");
+ok(dayNumber(P, new Date(QUIT_AT).toISOString().slice(0, 10)) >= 1, "day number");
 
-// patterns & nudges
+// cravings
 s = blank();
-for (let i = 0; i < 5; i++) s.cravings[`c${i}`] = { at: at(-i, 21), date: day(-i), trigger: "coffee", outcome: "beat", intensity: 3, updatedAt: 1 };
-s.cravings.x = { at: at(-1, 22), date: day(-1), trigger: "alcohol", outcome: "slip", updatedAt: 1 };
-const pat = patterns(s, NOW);
-ok(pat.top === "coffee" && pat.beat === 5 && pat.peak === 21, `patterns ${JSON.stringify({ top: pat.top, beat: pat.beat, peak: pat.peak })}`);
-ok(nudgeCheck(blank(), P, at(0, 10))?.kind === "confirm", "missing yesterday check-in → confirm");
-s = blank(); s.slips.a = { at: at(-1, 20), date: day(-1), updatedAt: 1 };
-ok(nudgeCheck(s, P, at(0, 10))?.kind === "slipped", "recent slip → slipped note");
-for (let i = 2; i <= 3; i++) s.slips[`w${i}`] = { at: at(-i, 20), date: day(-i), updatedAt: 1 };
-ok(nudgeCheck(s, P, at(0, 10))?.kind === "wobble", "3 slips in a week → wobble");
-s = blank(); for (let i = 1; i <= 10; i++) s.checkins[day(-i)] = { clean: true, cravings: 1, updatedAt: 1 };
-ok(nudgeCheck(s, P, at(0, 10)) === null, "all good → no note");
-ok(nudgeCheck(blank(), { ...P, quitAt: at(3) }, NOW) === null, "no notes before the start");
+s.cravings.a = { at: 1, outcome: "beat", updatedAt: 1 };
+s.cravings.b = { at: 2, outcome: "beat", deleted: true, updatedAt: 1 };
+ok(cravingsBeaten(s) === 1, "cravings beaten count");
 
-// plan
-ok(planFor(1, "vape").title === "Start line" && planFor(3, "vape").title === "The wall", "plan days");
-ok(planFor(0, "vape").title === "Race eve" && planFor(-6, "vape").title === "Pick your start line", "prep days");
-ok(planFor(40, "smoke").task && !/\{\w+\}/.test(JSON.stringify(planFor(12, "smoke"))), "placeholders filled");
-ok(planFor(200, "vape").title === "Long run", "maintenance after 12 weeks");
-for (let d = -8; d < 120; d++) { const e = planFor(d, "both"); if (!e.title || !e.about || !e.task || !e.builds) ok(false, `plan day ${d} incomplete`); }
-
-// medals & rewards
-s = blank();
-for (let i = 0; i < 12; i++) s.cravings[`c${i}`] = { at: at(-i % 9, 15), date: day(-i % 9), trigger: "coffee", outcome: "beat", updatedAt: 1 };
-const g = medals(s, P, at(0, 9));
-ok(g.find((x) => x.key === "time").got.length === 3, "10 days: 24h, 72h, 1 week");
-ok(g.find((x) => x.key === "craving").got.length === 2, "12 beaten: first + 10");
-ok(g.some((x) => x.key === "trig-coffee"), "trigger medal from own log");
-s.rewards.a = { name: "Shoes", price: 15, createdAt: 1, updatedAt: 1 };
-s.rewards.b = { name: "Lens", price: 100, createdAt: 2, updatedAt: 1 };
-const rp = rewardProgress(s, P, at(0, 9));
-ok(rp[0].frac === 1 && near(rp[1].have, 5, 0.05), `rewards fill in order ${JSON.stringify(rp.map((r) => r.have))}`);
+// tips: every day has all four parts, placeholders filled, and nothing refers to removed features
+for (let d = 1; d < 400; d++) {
+  const e = planFor(d, "vape");
+  const txt = JSON.stringify(e);
+  if (!e.title || !e.about || !e.task || !e.builds) ok(false, `tip day ${d} incomplete`);
+  if (/\{\w+\}/.test(txt)) ok(false, `tip day ${d} has an unfilled placeholder`);
+  if (/check-in|journal|Splits|Medals|reward fund|log the|Log any/i.test(txt)) ok(false, `tip day ${d} mentions a removed feature: ${txt.slice(0, 120)}`);
+}
+ok(planFor(1, "vape").task.includes("BM600"), "day 1 names the BM600");
 
 // merge: field-level
-const A = { clean: true, _f: { clean: 10 }, updatedAt: 10 };
-const B = { note: "hi", _f: { note: 20 }, updatedAt: 20 };
+const A = { outcome: "beat", _f: { outcome: 10 }, updatedAt: 10 };
+const B = { secs: 120, _f: { secs: 20 }, updatedAt: 20 };
 const m = mergeRec(A, B);
-ok(m.clean === true && m.note === "hi", "field-level merge keeps both");
-const m2 = merge({ ...blank(), checkins: { [day(0)]: A } }, { ...blank(), checkins: { [day(0)]: B } });
-ok(m2.checkins[day(0)].clean && m2.checkins[day(0)].note === "hi", "state merge");
+ok(m.outcome === "beat" && m.secs === 120, "field-level merge keeps both");
+const m2 = merge({ ...blank(), cravings: { x: A } }, { ...blank(), cravings: { x: B }, slips: { y: { at: 5, updatedAt: 1 } } });
+ok(m2.cravings.x.secs === 120 && m2.slips.y, "state merge");
 ok(mergeRec({ x: 1, updatedAt: 5 }, { deleted: true, updatedAt: 6 }).deleted, "tombstone wins when newer");
 
 console.log(`logic: ${passes} passed, ${fails} failed`);

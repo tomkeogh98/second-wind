@@ -1,8 +1,8 @@
-// Shared view helpers: the "now" context, dialogs, toasts, the finisher-medal celebration and nudge copy.
-import { clockTime, dateOf, DAY, daysBetween, esc, humanDur, HOUR, money, pickRandom, prettyDate, reducedMotion, shortDur, today, weekday } from "./util.js?v=1";
-import { profile, store } from "./store.js?v=1";
-import { avoided, cleanFor, courseProgress, cravingsBeaten, dayNumber, liveSlips, quitDate, saved, started } from "./quit.js?v=1";
-import { triggerLabel, words } from "./content.js?v=1";
+// Shared view helpers: the "now" context, dialogs, toasts and the finisher-medal celebration.
+import { dateOf, DAY, daysBetween, humanDur, HOUR, money, reducedMotion, shortDur, weekday, esc } from "./util.js?v=2";
+import { profile, store } from "./store.js?v=2";
+import { avoided, cleanFor, courseProgress, cravingsBeaten, dayNumber, liveSlips, quitDate, saved, started } from "./quit.js?v=2";
+import { words } from "./content.js?v=2";
 
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -13,17 +13,16 @@ export function context(nowMs = Date.now()) {
   const on = started(p, nowMs);
   const clean = on ? cleanFor(s, p, nowMs) : 0;
   const cp = courseProgress(s, p, nowMs);
-  const cash = saved(s, p, nowMs);
-  const lastSlip = liveSlips(s).filter((x) => x.at >= p.quitAt).pop();
-  const daysToGo = !on && p.quitAt ? daysBetween(now, quitDate(p)) : 0;
+  const cash = saved(p, nowMs);
+  const lastSlip = liveSlips(s, p).pop();
   return {
     s, p, now, nowMs, started: on, name: p.name || "Tom", hour: new Date(nowMs).getHours(), weekday: weekday(now),
     day: on ? dayNumber(p, now) : 0, clean: humanDur(clean), cleanH: clean / HOUR, cleanMs: clean,
-    saved: money(cash, cash < 100 ? 2 : 0), savedN: cash, avoided: avoided(s, p, nowMs), beat: cravingsBeaten(s),
+    saved: money(cash, cash < 100 ? 2 : 0), savedN: cash, avoided: avoided(p, nowMs), beat: cravingsBeaten(s),
     next: cp.next?.title, nextIn: cp.next ? humanDur(cp.next.at - clean) : "", hoursToNext: cp.next ? (cp.next.at - clean) / HOUR : null, course: cp,
     slipRecent: Boolean(lastSlip && nowMs - lastSlip.at < 2 * DAY), lastSlip,
-    toGo: !on && p.quitAt ? (p.quitAt - nowMs > DAY ? humanDur(p.quitAt - nowMs).replace(/ \d+ hours?$/, "") : shortDur(p.quitAt - nowMs)) : "",
-    daysToGo, thing: words(p.product).thing, cloud: p.product === "vape" ? "vapour" : "smoke",
+    toGo: !on && p.quitAt ? shortDur(p.quitAt - nowMs) : "", daysToGo: !on && p.quitAt ? daysBetween(now, quitDate(p)) : 0,
+    thing: words(p.product).thing, cloud: p.product === "vape" ? "vapour" : "smoke",
   };
 }
 
@@ -100,47 +99,4 @@ export function celebrate(title, sub = "", eyebrow = "Medal earned") {
   document.addEventListener("keydown", function k(e) { if (e.key === "Escape" || e.key === "Enter") { close(); document.removeEventListener("keydown", k); } });
   document.body.append(o);
   setTimeout(close, 7000);
-}
-
-// ---------- coach's notes: warm, never guilt-tripping, always about the why ----------
-const NOTES = {
-  slipped: [
-    "You slipped{when}. That's not the end of the race, it's a stumble on the course. Most people who quit for good had a few. What matters is the next step.",
-    "A slip{when} doesn't undo what you've done: your medals are still yours. Note what set it off{trigger}, and make the plan for next time.",
-  ],
-  wobble: [
-    "{n} slips in a week tells us the plan needs more support, not more willpower. Nicotine replacement (patches plus gum or spray) and a free stop-smoking adviser make you up to three times more likely to quit, says the NHS. It's in the Aid station.",
-    "This week's been a wobble ({n} slips). No shame in it. It's a sign to bring in backup: a pharmacist, Stop for Life Oxon, or NRT. Then set your line again.",
-  ],
-  confirm: [
-    "You didn't check in for {date}. Was it clean? Confirm it so your splits tell the truth.",
-  ],
-  rising: [
-    "Your craving ratings have gone up three days running. Usually that's a stress or a routine change. Check Splits for the trigger and get the plan ready.",
-  ],
-  window: [
-    "Heads up: around {hour} is your busiest craving time{trigger}. Have the next hour planned: water, a walk, the breathing drill.",
-  ],
-  social: [
-    "It's the weekend, and drinking's on your trigger list. Decide now: who you'll tell, what you'll order, when you'll go home.",
-  ],
-};
-export function nudgeText(n) {
-  const fmtH = (h) => `${String(h).padStart(2, "0")}:00`;
-  return pickRandom(NOTES[n.kind])
-    .replace("{n}", n.count ?? "")
-    .replace("{when}", n.at ? (dateOf(n.at) === today() ? ` today at ${clockTime(n.at)}` : ` on ${prettyDate(dateOf(n.at))}`) : "")
-    .replace("{trigger}", n.trigger && n.trigger !== "other" ? ` (${triggerLabel(n.trigger).toLowerCase()})` : "")
-    .replace("{date}", n.date ? prettyDate(n.date) : "yesterday")
-    .replace("{hour}", n.hour != null ? fmtH(n.hour) : "now");
-}
-
-// A tiny progress ring (used on the list and medals)
-export function ring(frac, label = "", size = 120) {
-  const r = 52, c = 2 * Math.PI * r;
-  return `<svg class="ring" viewBox="0 0 120 120" width="${size}" height="${size}" aria-hidden="true">
-    <circle cx="60" cy="60" r="${r}" class="ring-track"/>
-    <circle cx="60" cy="60" r="${r}" class="ring-fill" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - Math.max(0, Math.min(1, frac)))}" transform="rotate(-90 60 60)"/>
-    ${label ? `<text x="60" y="68" text-anchor="middle" class="ring-text">${esc(label)}</text>` : ""}
-  </svg>`;
 }

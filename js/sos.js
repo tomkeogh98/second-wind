@@ -1,18 +1,13 @@
-// Craving SOS ("ride it out"), the slip log and the breathing drill.
-import { dateOf, esc, fromLocalInput, live, pad, pickRandom, reducedMotion, toLocalInput, uid } from "./util.js?v=1";
-import { profile, setRec, store } from "./store.js?v=1";
-import { DISTRACTIONS, TRIGGERS, triggerLabel, words } from "./content.js?v=1";
-import { cravingsBeaten } from "./quit.js?v=1";
-import { $, $$, celebrate, modal, toast } from "./ui.js?v=1";
+// Craving SOS ("ride it out"), the one-tap slip, and the breathing drill. Nothing to fill in.
+import { dateOf, esc, pad, pickRandom, reducedMotion, uid } from "./util.js?v=2";
+import { profile, setRec, store } from "./store.js?v=2";
+import { DISTRACTIONS, REASON_IDEAS, words } from "./content.js?v=2";
+import { cravingsBeaten } from "./quit.js?v=2";
+import { $, celebrate, modal, toast } from "./ui.js?v=2";
 
 const RIDE = 5 * 60; // most cravings peak and pass within a few minutes
 
-const reasonsList = () => {
-  const p = profile();
-  return [p.why, ...Object.values(store.state.reasons).filter(live).map((r) => r.text)].filter(Boolean);
-};
-
-const chips = (name, list, sel) => list.map((t) => `<button type="button" class="chip${sel === t.id ? " on" : ""}" data-${name}="${esc(t.id)}" aria-pressed="${sel === t.id}">${esc(t.label)}</button>`).join("");
+export const reasons = () => [profile().why, ...REASON_IDEAS.slice(0, 5)];
 
 // The breathing pacer: in for 4, out for 6 (a long exhale is what slows the heart).
 function pacer(el) {
@@ -33,11 +28,9 @@ function pacer(el) {
 }
 
 export function openSOS() {
-  const p = profile();
-  const reasons = reasonsList();
-  const prompts = [...reasons.map((r) => ({ k: "Remember why", t: r })), ...DISTRACTIONS.map((t) => ({ k: "Try this", t }))];
-  const pick = () => pickRandom(prompts);
-  let intensity = null, trigger = null, done = false;
+  const prompts = [...reasons().map((t) => ({ k: "Remember why", t })), ...DISTRACTIONS.map((t) => ({ k: "Try this", t }))];
+  const first = prompts[0];
+  let done = false;
   const t0 = Date.now();
 
   modal(`<div class="sos">
@@ -48,16 +41,10 @@ export function openSOS() {
       <div class="pacer" aria-hidden="true"><i></i><span class="pacer-word">Breathe in</span></div>
       <div class="sos-time"><b id="sosClock">5:00</b><small>left on the hill</small></div>
     </div>
-    <div class="sos-prompt" aria-live="polite"><span id="sosK">Remember why</span><p id="sosT">${esc(reasons[0] || DISTRACTIONS[0])}</p><button type="button" class="link" id="sosNext">Another one →</button></div>
-    <div class="sos-log">
-      <p class="label">How strong? <span class="fine">(optional)</span></p>
-      <div class="chips" role="group" aria-label="Craving strength">${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="chip num" data-int="${n}" aria-pressed="false">${n}</button>`).join("")}</div>
-      <p class="label">What set it off?</p>
-      <div class="chips" role="group" aria-label="Trigger">${chips("trig", TRIGGERS, null)}</div>
-    </div>
+    <div class="sos-prompt" aria-live="polite"><span id="sosK">${esc(first.k)}</span><p id="sosT">${esc(first.t)}</p><button type="button" class="link" id="sosNext">Another one →</button></div>
     <div class="sos-actions">
       <button class="btn primary big" type="button" id="sosBeat">Craving's gone ✓</button>
-      <button class="btn ghost" type="button" id="sosSlip">I ${esc(words(p.product).thing === "smoke" ? "smoked" : "slipped")}</button>
+      <button class="btn ghost" type="button" id="sosSlip">I slipped</button>
     </div>
   </div>`, (d) => {
     const stopPacer = reducedMotion() ? () => {} : pacer($(".pacer", d));
@@ -72,61 +59,40 @@ export function openSOS() {
         $("#sosBeat", d).classList.add("pulse");
       }
     }, 250);
-    const rot = setInterval(() => { const x = pick(); $("#sosK", d).textContent = x.k; $("#sosT", d).textContent = x.t; }, 20000);
-    $("#sosNext", d).addEventListener("click", () => { const x = pick(); $("#sosK", d).textContent = x.k; $("#sosT", d).textContent = x.t; });
-    $$("[data-int]", d).forEach((b) => b.addEventListener("click", () => {
-      intensity = Number(b.dataset.int);
-      $$("[data-int]", d).forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", String(x === b)); });
-    }));
-    $$("[data-trig]", d).forEach((b) => b.addEventListener("click", () => {
-      trigger = b.dataset.trig;
-      $$("[data-trig]", d).forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", String(x === b)); });
-    }));
-    const save = (outcome) => {
+    const show = () => { const x = pickRandom(prompts); $("#sosK", d).textContent = x.k; $("#sosT", d).textContent = x.t; };
+    const rot = setInterval(show, 20000);
+    $("#sosNext", d).addEventListener("click", show);
+    $("#sosBeat", d).addEventListener("click", () => {
       if (done) return;
       done = true;
-      setRec("cravings", uid(), { at: t0, date: dateOf(t0), intensity, trigger: trigger || "other", outcome, secs: Math.round((Date.now() - t0) / 1000) });
-    };
-    $("#sosBeat", d).addEventListener("click", () => {
-      save("beat");
+      setRec("cravings", uid(), { at: t0, date: dateOf(t0), outcome: "beat", secs: Math.round((Date.now() - t0) / 1000) });
       d.close();
       const n = cravingsBeaten(store.state);
-      celebrate(n === 1 ? "First hill climbed" : `Hill ${n} climbed`, trigger ? `${triggerLabel(trigger)} didn't win this time.` : "That craving didn't win.", "Craving beaten");
+      celebrate(n === 1 ? "First hill climbed" : `Hill ${n} climbed`, "That craving didn't win.", "Craving beaten");
     });
-    $("#sosSlip", d).addEventListener("click", () => { save("slip"); d.close(); logSlip({ trigger }); });
+    $("#sosSlip", d).addEventListener("click", () => { d.close(); slipped(); });
     d.addEventListener("close", () => { clearInterval(tick); clearInterval(rot); stopPacer(); });
   }, "sos-sheet");
 }
 
-// Log a slip: honest, quick, no lecture.
-export function logSlip(pre = {}) {
-  const p = profile();
-  const w = words(p.product);
-  modal(`<form class="sheet-body slip-form">
-    <p class="kicker">Log a slip</p>
-    <h2>It happens. Write it down.</h2>
-    <p class="fine">A slip is a stumble, not the end of the race. Logging it honestly is how you learn your hardest hills. Your medals stay yours.</p>
-    <label>When <input type="datetime-local" name="at" value="${toLocalInput(pre.at || Date.now())}" max="${toLocalInput(Date.now())}" required></label>
-    ${p.product === "both" ? `<fieldset><legend>What</legend><label class="inline"><input type="radio" name="what" value="vape" checked> Vape</label><label class="inline"><input type="radio" name="what" value="smoke"> Cigarette</label></fieldset>` : ""}
-    <p class="label">What set it off?</p>
-    <div class="chips" role="group" aria-label="Trigger">${chips("trig", TRIGGERS, pre.trigger || null)}</div>
-    <label>Did you buy anything? <span class="fine">(£, so your savings stay honest)</span><input type="number" name="spent" min="0" step="0.01" inputmode="decimal" placeholder="0"></label>
-    <label>What would you do differently? <textarea name="note" rows="2" placeholder="e.g. Leave the pub before the third pint"></textarea></label>
-    <button class="btn primary">Log it and keep running</button>
-  </form>`, (d) => {
-    let trigger = pre.trigger || null;
-    $$("[data-trig]", d).forEach((b) => b.addEventListener("click", () => {
-      trigger = b.dataset.trig;
-      $$("[data-trig]", d).forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", String(x === b)); });
-    }));
-    $("form", d).addEventListener("submit", (e) => {
-      e.preventDefault();
-      const f = new FormData(e.target);
-      const at = Math.min(Date.now(), fromLocalInput(String(f.get("at"))));
-      if (at < p.quitAt) { toast("That's before your quit time, so it doesn't count as a slip."); return; }
-      setRec("slips", uid(), { at, date: dateOf(at), what: String(f.get("what") || p.product), trigger: trigger || "other", spent: Number(f.get("spent") || 0), note: String(f.get("note") || "").trim() });
+// A slip: one tap restarts the clock. Money saved and everything you've learned stay.
+export function slipped() {
+  const w = words(profile().product);
+  modal(`<div class="sheet-body slip-sheet">
+    <p class="kicker">Slipped?</p>
+    <h2>It happens. Keep running.</h2>
+    <p>A slip is a stumble, not the end of the race. Most people who quit for good had a few along the way. The clock and the health markers restart; what you've learned doesn't.</p>
+    <p class="fine">Useful question for later: what set it off? Whatever it was, there's a plan for it in the Toolkit.</p>
+    <div class="row-actions">
+      <button class="btn primary" type="button" id="slipYes">Restart the clock</button>
+      <button class="btn ghost" type="button" data-close>Actually, I didn't</button>
+    </div>
+  </div>`, (d) => {
+    $("#slipYes", d).addEventListener("click", () => {
+      const at = Date.now();
+      setRec("slips", uid(), { at, date: dateOf(at) });
       d.close();
-      toast(`Logged. The clock restarts, your medals don't. Not a ${w.puff} from here.`);
+      toast(`Clock restarted. Not a ${w.puff} from here.`);
     });
   });
 }
@@ -150,3 +116,4 @@ export function breathingDrill() {
     d.addEventListener("close", () => { clearInterval(tick); stop(); });
   }, "sos-sheet");
 }
+

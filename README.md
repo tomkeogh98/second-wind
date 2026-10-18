@@ -1,15 +1,21 @@
 # Second Wind
 
-Tom's quit-vaping (and smoking) tracker, built like race day. Live at https://tomkeogh98.github.io/quit-vaping/
+Tom's quit-vaping companion, built like race day. Live at https://tomkeogh98.github.io/quit-vaping/
 
-- **Today:** a different greeting every visit. The race bib shows a live clock from your last puff, plus money saved, nicotine left in the bottle, cravings beaten and your check-in streak. A coach's note appears when it helps. "Previously → Today → How it builds" follows a day-by-day plan: a prep week, days 1–28 one by one, weekly themes to week 12, then maintenance. Then today's splits (check in, today's task, move 20 minutes, journal) and the daily check-in.
-- **Craving SOS:** a 5-minute ride-it-out timer with a breathing pacer, your reasons and distraction ideas. It logs strength, trigger and outcome.
-- **Course:** health markers timed from your last nicotine (the NHS timeline for smoking, nicotine and withdrawal markers for vaping), plus the withdrawal elevation profile with your own craving ratings on top.
-- **Splits:** green = clean, grey = before the start, red = slip, outlined = not checked in. Also craving patterns (by hour and by trigger), slips and the journal.
-- **Medals:** distance, cravings beaten, money, check-in streak, full days, active days, and trigger medals built from your own log. A reward fund fills from your savings.
-- **Aid station:** the four Ds, the breathing drill, if-then plans (ordered by your triggers), reasons, myths, and support (Stop for Life Oxon, NHS).
+Deliberately low-effort: nothing to fill in, no check-ins. It's tools, motivation, tips and reminders.
 
-Plain HTML, CSS and ES modules, no build step. Data saves locally first, then syncs to the **private** repo `tomkeogh98/quit-vaping-data` through the GitHub API, merging field by field. If The Cut's or Guitar Hero's saved token (same origin) can see that repo, a device connects on its own. Otherwise use Settings → Devices & sync (setup link / QR / token). The data repo also sends the evening email nudges.
+- **Today:** a different greeting every visit. The race bib runs a live clock from the start line (Sun 18 Oct 2026, 18:56). Also on the page:
+  - money saved, BM600 pods not bought, nicotine not inhaled, cravings beaten;
+  - today's tip, from a day-by-day plan (days 1–28 one by one, weekly themes to week 12, then maintenance);
+  - what's happening in your body right now;
+  - the milestones coming up, with dates and what you'll have saved;
+  - your reasons.
+- **Craving SOS:** a 5-minute ride-it-out timer with a breathing pacer, rotating your reasons and things to do. One tap when it's gone. "I slipped" restarts the clock.
+- **Course:** health markers timed from the last nicotine, plus the withdrawal elevation profile.
+- **Toolkit:** the four Ds, a breathing drill, a plan for every trigger, myths answered, and support (Stop for Life Oxon, NHS).
+- **Reminders by email** from the private repo `tomkeogh98/quit-vaping-data`: tomorrow's tip each evening for the first two weeks and on the eve of big days, heads-ups when a body marker is due, and a kind word after a slip.
+
+The usage numbers are built into `js/store.js`: a Lost Mary BM600 with pre-filled pods (2 ml, 20 mg/ml), a 2-pack a day at about £6.50. The clock works on every device with no setup. Sync is optional and only carries slips and cravings-beaten. It connects by itself when The Cut's saved token can see `quit-vaping-data`, or via Settings → Sync across devices.
 
 The site is served from the `gh-pages` branch. Bump `?v=N` on every CSS/JS reference and import when releasing.
 
@@ -17,8 +23,7 @@ The site is served from the `gh-pages` branch. Bump `?v=N` on every CSS/JS refer
 
 ```sh
 PY=~/Library/Caches/claude-playwright/venv/bin/python
-$PY tests/run_logic.py    # clock, money, statuses, streaks, course, nudges, plan, medals, merge
-$PY tests/smoke.py        # end to end in Chrome + screenshots (tests/out/) at 375/1024/1440/1920, light & dark
-$PY tests/sync_test.py    # five devices against a fake GitHub API (setup link, borrowed Cut token, field merge)
-$PY tests/phone_shots.py  # phone viewport screenshots for eyeballing
+$PY tests/run_logic.py    # money, pods, clock, slips, course, milestones (incl. clocks change), tips, merge
+$PY tests/smoke.py [url]  # fakes day 1 / 10 / 40; every page at 375/1024/1440/1920, light & dark; SOS + slip
+$PY tests/sync_test.py    # optional sync against a fake GitHub API: setup link, borrowed Cut token, slip restarts everywhere
 ```

@@ -1,18 +1,22 @@
 // State lives in localStorage (works offline) and syncs to data.json in a private GitHub repo.
 // Every record merges field by field (last write wins per field), deletes are tombstones,
 // so two devices logging at the same time never lose anything.
-const STATE_KEY = "sw.state.v1";
+const STATE_KEY = "sw.state.v2";
 const SETTINGS_KEY = "sw.settings.v1";
 export const DEFAULT_REPO = "tomkeogh98/quit-vaping-data";
-const MAPS = ["checkins", "cravings", "slips", "tasks", "plans", "reasons", "rewards", "milestones", "attempts"];
+const MAPS = ["cravings", "slips", "milestones"];
 
+// Tom's numbers, built in so there's nothing to set up: a Lost Mary BM600 with pre-filled pods
+// (2 ml of 20 mg/ml nicotine salt, rated up to ~600 puffs each), a 2-pack a day at about £6.50.
+export const QUIT_AT = 1792346160000; // Sunday 18 October 2026, 18:56 (UK)
 export const DEFAULT_PROFILE = {
   name: "Tom",
   product: "vape", // vape | smoke | both
-  quitAt: null, // epoch ms
-  method: "cold", // cold | taper
-  vape: { mgml: 20, mlWeek: 6, costWeek: 15 },
-  smoke: { perDay: 10, packPrice: 17 },
+  device: "Lost Mary BM600",
+  quitAt: QUIT_AT, // epoch ms; "I slipped" logs a slip, it doesn't move this
+  podsDay: 2,
+  vape: { mgml: 20, mlWeek: 28, costWeek: 45.5 },
+  smoke: { perDay: 0, packPrice: 0 },
   why: "To breathe properly at run club, sound like myself on camera, and stop being on a leash to a little device.",
 };
 
@@ -45,7 +49,7 @@ export const profile = () => {
   const p = store.state.profile || {};
   return { ...DEFAULT_PROFILE, ...p, vape: { ...DEFAULT_PROFILE.vape, ...(p.vape || {}) }, smoke: { ...DEFAULT_PROFILE.smoke, ...(p.smoke || {}) } };
 };
-export const onboarded = () => Boolean(store.state.profile?.quitAt);
+export const onboarded = () => true;
 
 export function update(mutator) {
   mutator(store.state);
@@ -229,7 +233,7 @@ export async function testConnection(token = store.settings.token, repoName = st
   const res = await gh("", {}, token, repoName);
   if (!res.ok) throw new Error(await errText(res));
   const repo = await res.json();
-  if (!repo.private) throw new Error("That repo is public! Your check-ins, slips and journal would be visible to anyone. Use a private repo.");
+  if (!repo.private) throw new Error("That repo is public! Your quit data would be visible to anyone. Use a private repo.");
   if (!repo.permissions?.push) throw new Error("The token can read the repo but not write to it. Give it Contents: Read and write.");
   return repo.full_name;
 }
@@ -266,7 +270,7 @@ export function exportJSON() {
 }
 export function importJSON(text) {
   const data = JSON.parse(text);
-  if (!data || typeof data.checkins !== "object" || typeof data.cravings !== "object") throw new Error("That doesn't look like a Second Wind backup.");
+  if (!data || typeof data.cravings !== "object" || typeof data.slips !== "object") throw new Error("That doesn't look like a Second Wind backup.");
   update((s) => Object.assign(s, merge(s, data)));
 }
 

@@ -6,7 +6,7 @@ const LINES = [
   { h: "Breathe in. Properly.", s: "That's the whole point of all this. Enjoy it.", when: (c) => c.started },
   { h: "Your race. Your pace.", s: "Nobody's counting puffs but you, and you're at zero.", when: (c) => c.started },
   { h: "Still in it.", s: "Cravings are hills. You've been climbing them all along.", when: (c) => c.started },
-  { h: "Good to see you, {name}.", s: "Check in, tick the list, keep the clock running.", when: (c) => c.started },
+  { h: "Good to see you, {name}.", s: "Keep the clock running. That's the whole job today.", when: (c) => c.started },
   { h: "Lungs: reporting for duty.", s: "They've been waiting for this. Give them the day off from the {cloud}.", when: (c) => c.started },
   { h: "No leash today.", s: "No battery to watch, no pod to buy. Just you.", when: (c) => c.started },
   { h: "Steady pace.", s: "Quitting isn't a sprint. It's one ordinary day after another.", when: (c) => c.started },
@@ -15,7 +15,7 @@ const LINES = [
   { h: "Morning, {name}.", s: "First hours are the easiest to protect. Water, shower, out the door.", when: (c) => c.started && c.hour >= 5 && c.hour < 11 },
   { h: "Afternoon check.", s: "The 3pm slump is a classic craving window. Have a plan ready.", when: (c) => c.started && c.hour >= 13 && c.hour < 17 },
   { h: "Evening, {name}.", s: "Evenings are the hilly part of the course. You've got the kit.", when: (c) => c.started && c.hour >= 17 && c.hour < 22 },
-  { h: "Late one.", s: "Tired brains crave more. Check in, read a bit, lights out.", when: (c) => c.started && (c.hour >= 22 || c.hour < 5) },
+  { h: "Late one.", s: "Tired brains crave more. Read a bit, lights out.", when: (c) => c.started && (c.hour >= 22 || c.hour < 5) },
   // the first days
   { h: "Day one. Gun's gone.", s: "Win the next few minutes. Then the next. That's all today is.", when: (c) => c.day === 1, weight: 40 },
   { h: "Day two, {name}.", s: "Nicotine's falling fast. Grumpy is normal. Grumpy is progress.", when: (c) => c.day === 2, weight: 30 },
