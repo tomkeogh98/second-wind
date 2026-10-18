@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Second Wind · Tom's quit</title>
+  <meta name="description" content="Tom Keogh's quit-vaping tracker: a live clean clock, the health course, craving SOS, honest splits and medals.">
+  <meta name="theme-color" content="#0d0e11" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f3efe6" media="(prefers-color-scheme: light)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Second Wind">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23ff5a1f'/%3E%3Cpath d='M6 12h14a4 4 0 1 0-4-4M6 18h18a4 4 0 1 1-4 4M6 24h8' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500..900&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=1">
+</head>
+<body>
+  <a class="skip" href="#view">Skip to content</a>
+  <header class="top">
+    <a class="brand" href="#/" aria-label="Second Wind, home">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 12h15a4 4 0 1 0-4-4M5 18h19a4 4 0 1 1-4 4M5 24h8"/></svg>
+      <span class="brand-word">Second Wind</span>
+    </a>
+    <nav class="tabs" aria-label="Main">
+      <a href="#/">Today</a>
+      <a href="#/course">Course</a>
+      <a href="#/splits">Splits</a>
+      <a href="#/medals">Medals</a>
+      <a href="#/aid">Aid station</a>
+      <a href="#/settings">Settings</a>
+    </nav>
+    <div class="top-right">
+      <button id="sync" class="sync" type="button" data-status="off"><i aria-hidden="true"></i><span>this device</span></button>
+      <button class="btn sos-mini" type="button" data-sos>SOS</button>
+    </div>
+  </header>
+  <div id="syncBanner" class="sync-banner" role="status" hidden></div>
+  <main id="view" tabindex="-1"></main>
+  <nav class="bottom-tabs" aria-label="Main (phone)">
+    <a href="#/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2.5"/><circle cx="7.5" cy="8.5" r=".9" fill="currentColor"/><circle cx="16.5" cy="8.5" r=".9" fill="currentColor"/><path d="M9 14h6"/></svg><b>Today</b></a>
+    <a href="#/course"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 19l5-8 4 5 3-4 6 7z"/><path d="M15 6v6M15 6l4 1.5-4 1.5"/></svg><b>Course</b></a>
+    <button type="button" class="tab-sos" data-sos aria-label="Craving SOS"><span>SOS</span></button>
+    <a href="#/splits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8.5 3v4M15.5 3v4"/></svg><b>Splits</b></a>
+    <button type="button" id="moreBtn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5.5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18.5" cy="12" r="1.8"/></svg><b>More</b></button>
+  </nav>
+  <footer class="foot"><span class="foot-word">Second Wind</span> Not a puff. One day at a time. <a href="https://tomkeogh98.github.io/the-cut/">The Cut ↗</a></footer>
+  <noscript><p class="panel">Second Wind needs JavaScript switched on.</p></noscript>
+  <script type="module" src="js/app.js?v=1"></script>
+</body>
+</html>
